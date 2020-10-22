@@ -66,12 +66,13 @@ class GraphicsProgram3D(ConnectionListener):
         self.globalSpeedSide = 4
         self.view_matrix = ViewMatrix()
         self.view_matrix_top = ViewMatrix()
-        self.displayCenter = [self.screen.get_size()[i] // 2 for i in range(2)]
+        self.displayCenter = [300, 400]#[self.screen.get_size()[i] // 2 for i in range(2)]
         self.projection_matrix = ProjectionMatrix()
         self.fov = pi / 4
         self.projection_matrix.set_perspective(self.fov, 800/600, 0.5, 1000)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
         self.cube = Cube()
+        self.sphere = Sphere()
         self.clock = pygame.time.Clock()
         self.clock.tick(60)
         self.guns = Guns()
@@ -256,14 +257,14 @@ class GraphicsProgram3D(ConnectionListener):
             x.draw(self.shader)
             self.model_matrix.pop_matrix()
 #       bullets / They're currently only cubes.
-        self.cube.set_vertices(self.shader)
+        self.sphere.set_vertices(self.shader)
         for x in self.guns.guns:
             for y in x.bullets:
                 self.model_matrix.push_matrix()
                 self.model_matrix.add_translation(y.position.x,y.position.y, y.position.z)
                 self.model_matrix.add_scale(0.05, 0.05, 0.05)
                 self.shader.set_model_matrix(self.model_matrix.matrix)
-                y.cube.draw(self.shader)
+                y.sphere.draw()
                 self.model_matrix.pop_matrix()
                 
 #       other players?
@@ -272,24 +273,25 @@ class GraphicsProgram3D(ConnectionListener):
             self.model_matrix.add_translation(x["position"]["x"], x["position"]["y"], x["position"]["z"])
             self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
-            self.cube.draw(self.shader) #placeholder, hopefully / It's only cubes.
+            self.cube.draw() #placeholder, hopefully / It's only cubes.
             self.model_matrix.pop_matrix()
         for x in self.redTeam:
             self.model_matrix.push_matrix()
             self.model_matrix.add_translation(x["position"]["x"], x["position"]["y"], x["position"]["z"])
             self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
-            self.cube.draw(self.shader) #placeholder, hopefully / It's only cubes.
+            self.cube.draw() #placeholder, hopefully / It's only cubes.
             self.model_matrix.pop_matrix()
 
 #       sun?, Also a cube 
         self.model_matrix.push_matrix()
+        self.sphere.set_vertices(self.shader)
         self.shader.set_mat_diffuse(1.0, 1.0, 0.0)
         self.shader.set_mat_specular(1.0,1.0,0.0)
         self.model_matrix.add_translation(-self.length/2 + 25 * cos(self.angle),20 ,25 * (sin(self.angle)))
         self.model_matrix.add_scale(2.0, 2.0, 2.0)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.cube.draw(self.shader)
+        self.sphere.draw()
         self.model_matrix.pop_matrix()
 
 #       sand supposed to a little bit shine, so decent specular.
@@ -304,7 +306,7 @@ class GraphicsProgram3D(ConnectionListener):
         self.model_matrix.add_translation(-self.length/2, 0.0, -self.width/2)
         self.model_matrix.add_scale(self.length, 0.2, self.width)
         self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.cube.draw(self.shader)
+        self.cube.draw()
         self.model_matrix.pop_matrix()
 
 
