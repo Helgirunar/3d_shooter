@@ -19,6 +19,8 @@ class Guns():
                 x.toStr()                
             )
         return str(Dict)
+    def toDict(self):
+        return __dict__
 
 
     def updateGuns(self, delta_time, enemyTeam, server):

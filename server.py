@@ -2,8 +2,23 @@ import PodSixNet, time
 from time import sleep
 from PodSixNet.Channel import Channel
 from PodSixNet.Server import Server
+from Base3DObjects import *
 players = []
 damage = []
+length = 30
+width = 30
+gunsPos = []
+
+#       Create guns for red side
+for x in range(1,8):
+    gunsPos.append(Point(-length + 3,0.2,-width + 2 * x).toDict())
+    gunsPos.append(Point(-length + 3,0.2,-width + 4 * x).toDict())
+
+#       Create guns for blue side
+for x in range(1,8):
+    gunsPos.append(Point(-3,0.2,-width + 2 * x).toDict())
+    gunsPos.append(Point(-3,0.2,-width + 4 * x).toDict())
+
 class ClientChannel(Channel):
 
     def Network(self, data):
@@ -38,6 +53,7 @@ class MyServer(Server):
             "channel": channel            
         }
         self.connections.append(newConnection)
+        channel.Send({"action": "spawnGuns", "position": gunsPos})
         print(newConnection)
 
     def updatePlayers(self):# Sends all clients information about all players positions, and damage taken. 
@@ -45,7 +61,8 @@ class MyServer(Server):
         packet = {
             "action": "updatePlayer",
             "players": players,
-            "damage": damage
+            "damage": damage,
+            "gunsPos": gunsPos
         }
         for x in self.connections:
             x["channel"].Send(packet)
@@ -53,7 +70,13 @@ class MyServer(Server):
         damage = []
 
 # use the localaddr keyword to tell the server to listen on port 1337
-myserver = MyServer(localaddr=("0.0.0.0", 1337))
+# try:
+address=input("Host:Port (localhost:8000): ")
+if not address:
+    host, port="localhost", 1337
+else:
+    host,port=address.split(":")
+myserver = MyServer(localaddr=(host, int(port)))
 
 while True:
     myserver.Pump()

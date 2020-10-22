@@ -30,8 +30,8 @@ class GraphicsProgram3D(ConnectionListener):
         self.shader.use()
 
 #       Inputs from player, pick a team from red or blue, then set your name.
-        self.pickedTeam = "red"
-        self.playerName = "Player1"
+        self.pickedTeam = "blue"
+        self.playerName = "Player2"
 
 #       Player Height
         self.playerHeight = 0.75
@@ -75,17 +75,6 @@ class GraphicsProgram3D(ConnectionListener):
         self.clock = pygame.time.Clock()
         self.clock.tick(60)
         self.guns = Guns()
-
-#       Create guns for red side
-        for x in range(1,8):
-            self.guns.addGun(Gun("AK-47", 600, 32,Point(-self.length + 3,0.2,-self.width + 2 * x),30))
-            self.guns.addGun(Gun("m4-a1", 700, 28,Point(-self.length + 3,0.2,-self.width + 4 * x),35))
-
-#       Create guns for blue side
-        for x in range(1,8):
-            self.guns.addGun(Gun("AK-47", 600, 32,Point(-3,0.2,-self.width + 2 * x),30))
-            self.guns.addGun(Gun("m4-a1", 700, 28,Point(-3,0.2,-self.width + 4 * x),35))
-
 #       For movement        
         self.angle = 0
         self.angleY = 0
@@ -130,6 +119,15 @@ class GraphicsProgram3D(ConnectionListener):
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, txt_string)
         return tex_id
+
+    def Network_spawnGuns(self, data):
+        for x,item in enumerate(data["position"]):
+            print(x)
+            if x % 2 == 0:
+                self.guns.addGun(Gun("AK-47", 600, 32,Point(-self.length + 3,0.2,-self.width + 2 * x),30))
+            else:
+                self.guns.addGun(Gun("m4-a1", 700, 28,Point(-self.length + 3,0.2,-self.width + 4 * x),35))
+
 #   This is the function that receives the data from the server.
     def Network_updatePlayer(self, data):
         for x in data["players"]:
@@ -235,7 +233,7 @@ class GraphicsProgram3D(ConnectionListener):
 #       Lights
         self.shader.set_light_diffuse(1.0,1.0,1.0)
         self.shader.set_light_specular(1.0,1.0,1.0)
-        self.shader.set_light_pos(Point(25 * sin(self.angle/100), 14 + 25 * (sin(self.angle/100)),-self.length/2))
+        self.shader.set_light_pos(Point(-self.length/2 + 25 * cos(self.angle),20 ,25 * (sin(self.angle))))
         self.shader.set_shininess(100)
         self.model_matrix.load_identity()
         self.cube.set_vertices(self.shader)
@@ -288,7 +286,7 @@ class GraphicsProgram3D(ConnectionListener):
         self.model_matrix.push_matrix()
         self.shader.set_mat_diffuse(1.0, 1.0, 0.0)
         self.shader.set_mat_specular(1.0,1.0,0.0)
-        self.model_matrix.add_translation(10 + 25 * sin(self.angle/100), 25 + 25 * (sin(self.angle/100)),10 + -self.length/2)
+        self.model_matrix.add_translation(-self.length/2 + 25 * cos(self.angle),20 ,25 * (sin(self.angle)))
         self.model_matrix.add_scale(2.0, 2.0, 2.0)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.cube.draw(self.shader)
