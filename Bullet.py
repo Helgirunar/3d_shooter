@@ -9,7 +9,7 @@ class Bullet():
         self.forward = direction
         self.startPos = Point(pos.x,pos.y,pos.z)
         self.position = pos
-        self.cube = Cube()
+        self.sphere = Sphere()
 
     def collide(self, player):
         x = self.position.x - player.position.x
