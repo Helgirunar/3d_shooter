@@ -354,7 +354,7 @@ class GraphicsProgram3D(ConnectionListener):
                     exiting = True
                 elif event.type == pygame.KEYDOWN:
                     if event.key == K_ESCAPE:    
-                        self.player.death(self)    
+                        self.player.death(self)
                         self.Send({"action": "playerLeave", "player": self.player.toDict()})
                         print("Escaping!")
                         exiting = True
