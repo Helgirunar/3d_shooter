@@ -31,7 +31,7 @@ class GraphicsProgram3D(ConnectionListener):
 
 #       Inputs from player, pick a team from red or blue, then set your name.
         self.pickedTeam = "blue"
-        self.playerName = "Player2"
+        self.playerName = "Player1"
 
 #       Player Height
         self.playerHeight = 0.75
@@ -54,11 +54,13 @@ class GraphicsProgram3D(ConnectionListener):
         self.redTeam = []
         if(self.pickedTeam == "red"):
             self.PlayerStartPos = self.teamRedSpawns[rand.randint(0,4)]
+#          This is my player, it takes parameters (poisition, name, team, teamSpawns)
+            self.player = Player(self.PlayerStartPos, self.playerName, self.pickedTeam, self.teamRedSpawns)
         else:
             self.PlayerStartPos = self.teamBlueSpawns[rand.randint(0,4)]            
+#           This is my player, it takes parameters (poisition, name, team, teamSpawns)
+            self.player = Player(self.PlayerStartPos, self.playerName, self.pickedTeam, self.teamRedSpawns)
 
-#       This is my player, it takes parameters (poisition, name, team)
-        self.player = Player(self.PlayerStartPos, self.playerName, self.pickedTeam)
 
 #       extra            
         self.model_matrix = ModelMatrix()
@@ -122,40 +124,62 @@ class GraphicsProgram3D(ConnectionListener):
         return tex_id
 
     def Network_spawnGuns(self, data):
+        print('spawning guns')
         for x,item in enumerate(data["position"]):
-            print(x)
-            if x % 2 == 0:
-                self.guns.addGun(Gun("AK-47", 600, 32,Point(-self.length + 3,0.2,-self.width + 2 * x),30))
+            if x % 2:
+                self.guns.addGun(Gun("AK-47", 600, 32,Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]),30, item["beingHeld"], item["id"]))
             else:
-                self.guns.addGun(Gun("m4-a1", 700, 28,Point(-self.length + 3,0.2,-self.width + 4 * x),35))
+                self.guns.addGun(Gun("M4-A1", 700, 27,Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]),30, item["beingHeld"], item["id"]))
+
+    def Network_removeGun(self, data):
+        for x, item in enumerate(self.guns.guns):
+            if item.position.x == data["gun"]["x"] and item.position.z == data["gun"]["z"]:
+                self.guns.guns.remove(item)
+    def Network_notifyLeave(self, data):
+        print(data)
+        if(data["player"]["team"] == "red"):
+            for x, item in enumerate(self.redTeam):
+                print(item)
+                if item["player"]["name"] == data["player"]["name"]:
+                    self.redTeam.remove(item)  
+        elif(data["player"]["team"] == "blue"):
+            for x, item in enumerate(self.blueTeam):
+                print(item)
+                if item["player"]["name"] == data["player"]["name"]:
+                    self.blueTeam.remove(item)
+            
 
 #   This is the function that receives the data from the server.
     def Network_updatePlayer(self, data):
         for x in data["players"]:
-            if x["name"] == self.player.name:
+            if x["player"]["name"] == self.player.name:
+                #Do nothing so I don't render myself. You have to have a unique name.
                 pass
             else:
-                if(x["team"] == "red"):
+                if(x["player"]["team"] == "red"):
                     tempfound = False
                     for idx, item in enumerate(self.redTeam):
-                        if x["name"] == item["name"]:
+                        if x["player"]["name"] == item["player"]["name"]:
                             self.redTeam[idx] = x
                             tempfound = True
                     if(not tempfound):
                         self.redTeam.append(x)
-                elif(x["team"] == "blue"):
+                elif(x["player"]["team"] == "blue"):
                     tempfound = False
                     for idx, item in enumerate(self.blueTeam):
-                        if x["name"] == item["name"]:
+                        if x["player"]["name"] == item["player"]["name"]:
                             self.blueTeam[idx] = x
                             tempfound = True
                     if(not tempfound):
                         self.blueTeam.append(x)
-
         for x in data["damage"]:
-            if x["player"]["name"] == self.player.name:
-                self.player.takeDamage(x["dmg"])
-
+            if x["player"]["player"]["name"] == self.player.name:
+                self.player.takeDamage(x["dmg"], self)
+        for x,item in enumerate(data["gunsPos"]):
+            for y in self.guns.guns:
+                #Only update if the position has changed or if he has pickedup or dropped a gun
+                if item["id"] == y.id and item["Point"]["x"] != y.position.x and item["Point"]["z"] != y.position.z or item["id"] == y.id and item["beingHeld"] != y.beingHeld:
+                    y.update(Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]), item["beingHeld"])
     def update(self):
         connection.Pump()
         self.Pump()
@@ -169,16 +193,16 @@ class GraphicsProgram3D(ConnectionListener):
         self.angle += delta_time
 #       For picking up guns.
         for x in self.guns.guns:
-            if(x.beingHeld != True and len(self.player.guns) != 2):
-                x.collide(self.player)
+            if(x.beingHeld != True):
+                x.collide(self.player, self)
 
 #       Get the rotation from the mouse
         self.angleY = -math.atan(self.mouseMove[0]) * delta_time * 1.5
         self.angleYRotate += -math.atan(self.mouseMove[0]) * delta_time * 1.5
         self.angleX = -math.atan(self.mouseMove[1]) * delta_time * 1.5
         self.angleXRotate += -math.atan(self.mouseMove[1]) * delta_time * 1.5
-        self.player.yaw(self.angleY * 1.3)# Horizontal
-        self.player.pitch(self.angleX * 1.3)# Vertical
+        self.player.yaw(self.angleY * 1.3, self)# Horizontal
+        self.player.pitch(self.angleX * 1.3,self)# Vertical
 
 #       Crouch and sprint.
         speed = self.globalSpeed
@@ -192,13 +216,13 @@ class GraphicsProgram3D(ConnectionListener):
 
 #       Movement
         if self.W_key_down:
-            self.player.slide(0, 0, -speed * delta_time)
+            self.player.slide(0, 0, -speed * delta_time, self)
         if self.S_key_down:
-            self.player.slide(0, 0, 4 * delta_time * 1.3)
+            self.player.slide(0, 0, 4 * delta_time * 1.3, self)
         if self.A_key_down:
-            self.player.slide(-4 * delta_time/2 * 1.3, 0,0)
+            self.player.slide(-4 * delta_time/2 * 1.3, 0,0, self)
         if self.D_key_down:
-            self.player.slide(5 * delta_time/2 * 1.3, 0, 0)
+            self.player.slide(5 * delta_time/2 * 1.3, 0, 0, self)
 #       updates the player and then does collision for each bullet inside the each gun.
         self.player.updatePlayer(delta_time)
 #       Reason for why I take the teams as parameters, I am only supposed to be able to hit enemy members.
@@ -234,7 +258,7 @@ class GraphicsProgram3D(ConnectionListener):
 #       Lights
         self.shader.set_light_diffuse(1.0,1.0,1.0)
         self.shader.set_light_specular(1.0,1.0,1.0)
-        self.shader.set_light_pos(Point(-self.length/2 + 25 * cos(self.angle),20 ,25 * (sin(self.angle))))
+        self.shader.set_light_pos(Point(-self.length/2 + 25 * cos(self.angle),10 ,25 * (sin(self.angle))))
         self.shader.set_shininess(100)
         self.model_matrix.load_identity()
         self.cube.set_vertices(self.shader)
@@ -247,16 +271,19 @@ class GraphicsProgram3D(ConnectionListener):
             self.model_matrix.push_matrix()
             self.model_matrix.add_translation(x.position.x,x.position.y, x.position.z)
             self.model_matrix.add_scale(0.10, 0.10, 0.10)
-            if(x.beingHeld):
-                x.rotationY = self.angleYRotate * 1.3
-                x.rotationX = self.angleXRotate * 1.3
             self.model_matrix.add_rotation_y(x.rotationY)
             self.model_matrix.add_rotation_x(-x.rotationX)
             self.shader.set_model_matrix(self.model_matrix.matrix)
             x.set_vertices(self.shader)
             x.draw(self.shader)
             self.model_matrix.pop_matrix()
-#       bullets / They're currently only cubes.
+
+        for x in self.player.guns:
+            if(x.beingHeld):
+                x.rotationY = self.angleYRotate * 1.3
+                x.rotationX = self.angleXRotate * 1.3
+     
+#       bullets
         self.sphere.set_vertices(self.shader)
         for x in self.guns.guns:
             for y in x.bullets:
@@ -266,30 +293,38 @@ class GraphicsProgram3D(ConnectionListener):
                 self.shader.set_model_matrix(self.model_matrix.matrix)
                 y.sphere.draw()
                 self.model_matrix.pop_matrix()
-                
+
 #       other players?
+        self.shader.set_mat_diffuse(1.0, 0.1, 0.0)
+        self.shader.set_mat_specular(0.0,0.0,0.0)
+        self.sphere.set_vertices(self.shader)
         for x in self.blueTeam:
+            print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["position"]["x"], x["position"]["y"], x["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"])
             self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
-            self.cube.draw() #placeholder, hopefully / It's only cubes.
+            self.sphere.draw() #placeholder, hopefully / It's only cubes.
             self.model_matrix.pop_matrix()
+        self.shader.set_mat_diffuse(0.0, 0.0, 1.0)
+        self.shader.set_mat_specular(0.0,0.0,1.0)
+        self.sphere.set_vertices(self.shader)
         for x in self.redTeam:
+            print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["position"]["x"], x["position"]["y"], x["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"])
             self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
-            self.cube.draw() #placeholder, hopefully / It's only cubes.
+            self.sphere.draw() #placeholder, hopefully / It's only cubes.
             self.model_matrix.pop_matrix()
 
-#       sun?, Also a cube 
+#       sun?
         self.model_matrix.push_matrix()
         self.sphere.set_vertices(self.shader)
         self.shader.set_mat_diffuse(1.0, 1.0, 0.0)
         self.shader.set_mat_specular(1.0,1.0,0.0)
-        self.model_matrix.add_translation(-self.length/2 + 25 * cos(self.angle),20 ,25 * (sin(self.angle)))
-        self.model_matrix.add_scale(2.0, 2.0, 2.0)
+        self.model_matrix.add_translation(-self.length/2 + 25 * cos(self.angle),100 ,25 * (sin(self.angle)))
+        self.model_matrix.add_scale(5.0, 5.0, 5.0)
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.sphere.draw()
         self.model_matrix.pop_matrix()
@@ -318,7 +353,8 @@ class GraphicsProgram3D(ConnectionListener):
                     print("Quitting!")
                     exiting = True
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == K_ESCAPE:        
+                    if event.key == K_ESCAPE:    
+                        self.player.death(self)    
                         self.Send({"action": "playerLeave", "player": self.player.toDict()})
                         print("Escaping!")
                         exiting = True
@@ -337,11 +373,11 @@ class GraphicsProgram3D(ConnectionListener):
                     if event.key == K_LCTRL:
                         self.crouching = True
                     if event.key == K_g:
-                        self.player.drop()
+                        self.player.drop(self)
                     if event.key == K_2:
-                        self.player.changeGun(2)
+                        self.player.changeGun(2, self)
                     if event.key == K_1:
-                        self.player.changeGun(1)
+                        self.player.changeGun(1, self)
                     if event.key == K_r:
                         self.player.reloading = True
                     if event.key == K_p:

@@ -4,14 +4,14 @@ from Matrices import *
 from Bullet import Bullet
 
 class Gun():
-    def __init__(self,name, rpm, dmg, pos, capacity):
+    def __init__(self,name, rpm, dmg, pos, capacity, beingHeld, id):
+        self.id = id
         self.name = name
         self.rpm = rpm
         self.dmg = dmg
         self.magazine = capacity
         self.capacity = capacity
         self.position = pos
-
         self.forward = Vector(0,0,1)
         self.back = Vector(0,0,-1)
         self.right = Vector(-1,0,0)
@@ -22,7 +22,7 @@ class Gun():
         self.reloadTimeTotal = 3
         self.reloadTimeLeft = 3
         self.delay = rpm / 1000.0
-        self.beingHeld = False
+        self.beingHeld = beingHeld
         self.position_array = [-0.2, -0.2, -0.5,
                             -0.2, 0.2, -0.5,
                             0.2, 0.2, -0.5,
@@ -221,6 +221,10 @@ class Gun():
             self.bullets.append(Bullet(self.dmg,self.forward, self.position))
             self.magazine = self.magazine-1
 
+    def update(self, pos, beingHeld):
+        self.position.x = pos.x
+        self.position.z = pos.z
+        self.beingHeld = beingHeld
     def aiming(self, looking, position):
         self.position = position
     def reload(self, player, delta_time):
@@ -246,12 +250,13 @@ class Gun():
         }
         return str(Dict)
 
-    def collide(self, player):# Collision check
+    def collide(self, player, server):# Collision check
         x = self.position.x - player.position.x
         z = self.position.z - player.position.z
         distance = math.sqrt(x*x + z*z)
         if(distance <= 0.15):
-            player.pickUp(self)
+            if(len(player.guns) < 2):
+                player.pickUp(self, server)
             self.beingHeld = True
             return True
         return False

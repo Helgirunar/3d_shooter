@@ -1,10 +1,11 @@
 from Base3DObjects import *
 from math import * # trigonometry
 from Gun import Gun
+import random as rand
 import pygame
 
 class Player():
-    def __init__(self,start, name, team):
+    def __init__(self,start, name, team, spawns):
         self.name = name
         self.position = start
         self.team = team
@@ -15,7 +16,8 @@ class Player():
         self.looking = Vector(0,0,1)
         self.gunPos = self.position + Vector(0,-0.10,0) + self.forward * 0.2 + self.right * 0.1
         self.guns = []
-        self.emptyGun = Gun('template',1, 1, Point(0,0,0), 0)
+        self.spawns = spawns
+        self.emptyGun = Gun('template',1, 1, Point(0,0,0), 0, False, 0)
         self.selected = self.emptyGun
         self.holstered = self.emptyGun
         self.shooting = False
@@ -27,11 +29,12 @@ class Player():
         self.lastFired = 0
         self.reloading = False
 
-
-    def slide(self, del_right, del_up, del_back):# Movement
+    def slide(self, del_right, del_up, del_back,server):# Movement
         self.position += self.right * del_right + self.up * del_up + self.back * del_back
         self.gunPos = self.position + Vector(0,-0.10,0) + self.forward * 0.2 + self.right * 0.1
         self.selected.position = self.gunPos
+        if(self.selected.beingHeld):
+            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id})
         if(self.haveGun):
             self.selected.position = self.gunPos
 
@@ -50,39 +53,46 @@ class Player():
         else:
             return False
 
-    def pickUp(self, gun):# Picks up a gun
+    def pickUp(self, gun, server):# Picks up a gun
         self.haveGun = True
-        if(len(self.guns) == 0):
-            self.selected = gun
-            gun.setOrientation(self.gunPos, self.forward, self.right, self.back, self.up)
-        else:
-            gun.position = Point(0,0,0)
-        self.guns.append(gun)
-
-    def drop(self):# Drops guns.
-        if(self.selected in self.guns):
-            self.guns.remove(self.selected)
-            self.selected.beingHeld = False
-            self.selected.position = Point(self.gunPos.x, 0.2, self.gunPos.z)
-            if(len(self.guns) == 1):
-                self.selected = self.holstered
-                self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
-                self.holstered = self.emptyGun
+        if(gun.beingHeld == False and gun.id != self.selected.id):
+            if(len(self.guns) == 0):
+                self.selected = gun
+                gun.setOrientation(self.gunPos, self.forward, self.right, self.back, self.up)
+                server.Send({"action": "updateGun","newPos": gun.position.toDict(), "beingHeld": True, "id": self.selected.id})
             else:
-                self.selected = self.emptyGun
+                gun.position = Point(0,0,0)
+                self.holstered = gun
+                server.Send({"action": "updateGun","newPos": gun.position.toDict(), "beingHeld": True, "id": self.holstered.id})
+            self.guns.append(gun)
+    def drop(self, server):
+        if(self.selected.name != "template"):
+            tmpGun = self.selected
+            tmpGun.setOrientation(Point(self.gunPos.x, 0.2, self.gunPos.z), self.forward, self.right, self.back, self.up)
+            self.selected = self.emptyGun
+            self.guns.remove(tmpGun)
+            server.Send({"action": "updateGun","newPos": Point(self.gunPos.x, 0.2, self.gunPos.z).toDict(), "beingHeld": False, "id": tmpGun.id})
+            if(self.holstered.name != "template"):
+                self.selected = self.holstered
+                server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id})
+                self.holstered = self.emptyGun
 
-    def changeGun(self, nr):# If the player is trying to swap between his primary and secondary gun.
+    def changeGun(self, nr, server):# If the player is trying to swap between his primary and secondary gun.
         if(nr == 1 and len(self.guns) > 0):
             self.selected = self.guns[0]
             self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
+            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id})
             if(len(self.guns) == 2):
                 self.holstered = self.guns[1]
                 self.holstered.position = Point(0,0,0)
-        elif(len(self.guns) > 1):
+                server.Send({"action": "updateGun","newPos": self.holstered.position.toDict(), "beingHeld": True, "id": self.holstered.id})
+        elif(len(self.guns) == 2):
             self.selected = self.guns[1]
             self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
+            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id})
             self.holstered = self.guns[0]
             self.holstered.position = Point(0,0,0)
+            server.Send({"action": "updateGun","newPos": self.holstered.position.toDict(), "beingHeld": True, "id": self.holstered.id})
     
     def updatePlayer(self, delta_time):# Update function for the player
         self.lastFired -= delta_time * 5
@@ -92,17 +102,26 @@ class Player():
         elif(self.reloading):
             player = self
             self.selected.reload(player, delta_time)
-        
-    def takeDamage(self, dmg):# Deals damage, only if the player is still alive.
+
+    def death(self, server):
+        for x in self.guns:
+            dropTo = Point(self.gunPos.x, 0.2, self.gunPos.z).toDict()
+            server.Send({"action": "updateGun","newPos": dropTo, "beingHeld": False, "id": x.id})
+        self.guns = []
+        self.position = self.spawns[rand.randint(0,4)]
+        self.health = 100
+        self.dead = False
+
+    def takeDamage(self, dmg, server):# Deals damage, only if the player is still alive.
         if(self.health > 0):
             self.health -= dmg
         if(self.health <= 0 and self.dead != True):
-            print('I am dead')
+            self.death(server)
             self.deaths += 1
             self.dead = True
             self.position.y = 0
 
-    def yaw(self, angle):# Moves the player Horizontally
+    def yaw(self, angle,server):# Moves the player Horizontally
         c = cos(angle)
         s = sin(angle)
         tmp_back = self.back * c + self.right * s
@@ -112,13 +131,15 @@ class Player():
         self.looking = Vector(self.forward.x, self.looking.y, self.forward.z)
         self.gunPos = self.position + Vector(0,-0.10,0) + self.forward * 0.2 + self.right * 0.1
         self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
+        server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id})
 
-    def pitch(self, angle):# Moves the player Vertically
+    def pitch(self, angle, server):# Moves the player Vertically
         c = cos(angle)
         s = sin(angle)
         self.looking = self.up * s + self.looking * c
         self.gunPos = self.position + Vector(0,-0.10,0) + self.forward * 0.2 + self.right * 0.1
         self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
+        server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id})
 
     def toDict(self):# Creates a dict from the usefull information that the server might need.
         tempSelf = {

@@ -19,8 +19,8 @@ class Bullet():
             return True
         return False
     def collideDict(self, player):
-        x = self.position.x - player["position"]["x"]
-        z = self.position.z - player["position"]["z"]
+        x = self.position.x - player["player"]["position"]["x"]
+        z = self.position.z - player["player"]["position"]["z"]
         distance = math.sqrt(x*x + z*z)
         if(distance <= 0.2):
             return True
