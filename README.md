@@ -1,6 +1,10 @@
 # 3d_shooter
 Assignment05 for TGRA
 
+REQ:
+pip install numpy
+pip install PodSixNet
+
 To run this:
 1. Run the server via the python server.py command
 2. Run the client via the python Control3DProgram.py
