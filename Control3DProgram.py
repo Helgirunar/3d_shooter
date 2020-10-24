@@ -18,7 +18,7 @@ from Guns import Guns
 from Gun import Gun
 
 class GraphicsProgram3D(ConnectionListener):
-    def __init__(self):
+    def __init__(self, team_name= "BlueTeam", player_name= "Player1"):
         pygame.init() 
         self.screen = pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
 #       Length and width of the playing field.
@@ -30,8 +30,11 @@ class GraphicsProgram3D(ConnectionListener):
         self.shader.use()
 
 #       Inputs from player, pick a team from red or blue, then set your name.
-        self.pickedTeam = "blue"
-        self.playerName = "Player1"
+        self.pickedTeam = team_name
+        self.playerName = player_name
+        # Set caption
+        pygame.display.set_caption("Some weird gun game? \t({})".format(self.playerName))
+
 
 #       Player Height
         self.playerHeight = 0.75
@@ -413,4 +416,6 @@ class GraphicsProgram3D(ConnectionListener):
         self.program_loop()
 
 if __name__ == "__main__":
-    GraphicsProgram3D().start()
+    args = sys.argv
+    if len(args)>1: GraphicsProgram3D( str(args[1]), str(args)[2]).start()
+    else:           GraphicsProgram3D().start()
