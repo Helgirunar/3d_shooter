@@ -17,8 +17,10 @@ from Player import Player
 from Guns import Guns
 from Gun import Gun
 
+from load_models import load_obj_file
+
 class GraphicsProgram3D(ConnectionListener):
-    def __init__(self, team_name= "BlueTeam", player_name= "Player1"):
+    def __init__(self, team_name= "red", player_name= "Player1"):
         pygame.init() 
         self.screen = pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
 #       Length and width of the playing field.
@@ -39,7 +41,9 @@ class GraphicsProgram3D(ConnectionListener):
 #       Player Height
         self.playerHeight = 0.75
 
-
+#       load player model
+        self.bluePlayer = load_obj_file(sys.path[0] + "/models", "player_blue.obj")
+        self.redPlayer = load_obj_file(sys.path[0] + "/models", "player_red.obj")
 #       Random Spawns for each team. On each side of the playing field.
         self.teamRedSpawns =[Point(-self.length + 3,self.playerHeight,-self.width + 2),
                              Point(-self.length + 3,self.playerHeight,-self.width + 6),
@@ -302,23 +306,22 @@ class GraphicsProgram3D(ConnectionListener):
         self.shader.set_mat_specular(0.0,0.0,0.0)
         self.sphere.set_vertices(self.shader)
         for x in self.blueTeam:
-            print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
+            # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"])
-            self.model_matrix.add_scale(0.25, 0.5, 0.25)
+            self.model_matrix.add_translation(x["player"]["position"]["x"], 0, x["player"]["position"]["z"])
+            # self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
-            self.sphere.draw() #placeholder, hopefully / It's only cubes.
+            self.bluePlayer.draw(self.shader) 
             self.model_matrix.pop_matrix()
         self.shader.set_mat_diffuse(0.0, 0.0, 1.0)
         self.shader.set_mat_specular(0.0,0.0,1.0)
-        self.sphere.set_vertices(self.shader)
         for x in self.redTeam:
-            print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
+            # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"])
-            self.model_matrix.add_scale(0.25, 0.5, 0.25)
+            self.model_matrix.add_translation(x["player"]["position"]["x"], 0, x["player"]["position"]["z"])
+            #self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
-            self.sphere.draw() #placeholder, hopefully / It's only cubes.
+            self.redPlayer.draw(self.shader) 
             self.model_matrix.pop_matrix()
 
 #       sun?
@@ -417,5 +420,6 @@ class GraphicsProgram3D(ConnectionListener):
 
 if __name__ == "__main__":
     args = sys.argv
-    if len(args)>1: GraphicsProgram3D( str(args[1]), str(args)[2]).start()
+    print(args)
+    if len(args)>1: GraphicsProgram3D(args[1], args[2]).start()
     else:           GraphicsProgram3D().start()
