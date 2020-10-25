@@ -222,13 +222,17 @@ class GraphicsProgram3D(ConnectionListener):
 
 #       Movement
         if self.W_key_down:
-            self.player.slide(0, 0, -speed * delta_time, self)
+            if self.can_move(0, -speed * delta_time):
+                self.player.slide(0, 0, -speed * delta_time, self)
         if self.S_key_down:
-            self.player.slide(0, 0, 4 * delta_time * 1.3, self)
+            if self.can_move(0,4 * delta_time * 1.3):
+                self.player.slide(0, 0, 4 * delta_time * 1.3, self)
         if self.A_key_down:
-            self.player.slide(-4 * delta_time/2 * 1.3, 0,0, self)
+            if self.can_move(-4 * delta_time/2 * 1.3,0):
+                self.player.slide(-4 * delta_time/2 * 1.3, 0,0, self)
         if self.D_key_down:
-            self.player.slide(5 * delta_time/2 * 1.3, 0, 0, self)
+            if self.can_move(5 * delta_time/2 * 1.3,0):
+                self.player.slide(5 * delta_time/2 * 1.3, 0, 0, self)
 #       updates the player and then does collision for each bullet inside the each gun.
         self.player.updatePlayer(delta_time)
 #       Reason for why I take the teams as parameters, I am only supposed to be able to hit enemy members.
@@ -236,6 +240,17 @@ class GraphicsProgram3D(ConnectionListener):
             self.guns.updateGuns(delta_time, self.blueTeam, self)
         else:
             self.guns.updateGuns(delta_time, self.redTeam, self)
+
+    def can_move(self, stepx, stepz):
+        new_pos = self.player.position + self.player.right * stepx + self.player.back * stepz
+        if -0.25>new_pos.x >-self.width+0.25:
+            if -0.25>new_pos.z >-self.length+0.25:
+                for box in self.boxes:
+                    if box.pos.x-0.75<new_pos.x<box.pos.x+0.75:
+                        if box.pos.z-0.75<new_pos.z<box.pos.z+0.75:
+                            return False
+                return True
+        return False
 
     def display(self):
         glEnable(GL_DEPTH_TEST)  
