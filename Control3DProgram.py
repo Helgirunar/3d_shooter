@@ -11,7 +11,7 @@ from time import sleep
 import sys
 import time
 import random as rand
-from Shaders import *
+from Shaders import Shader3D
 from Matrices import *
 from Player import Player
 from Guns import Guns
@@ -68,7 +68,7 @@ class GraphicsProgram3D(ConnectionListener):
         else:
             self.PlayerStartPos = self.teamBlueSpawns[rand.randint(0,4)]            
 #           This is my player, it takes parameters (poisition, name, team, teamSpawns)
-            self.player = Player(self.PlayerStartPos, self.playerName, self.pickedTeam, self.teamRedSpawns)
+            self.player = Player(self.PlayerStartPos, self.playerName, self.pickedTeam, self.teamBlueSpawns)
 
 
 #       extra            
