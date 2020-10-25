@@ -17,6 +17,7 @@ from Player import Player
 from Guns import Guns
 from Gun import Gun
 from Texture import Texture
+from Box import Box
 
 from load_models import load_obj_file
 
@@ -86,6 +87,7 @@ class GraphicsProgram3D(ConnectionListener):
         self.clock = pygame.time.Clock()
         self.clock.tick(60)
         self.guns = Guns()
+        self.boxes= list()
 #       For movement        
         self.angle = 0
         self.angleY = 0
@@ -124,6 +126,15 @@ class GraphicsProgram3D(ConnectionListener):
                 self.guns.addGun(Gun("AK-47", 600, 32,Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]),30, item["beingHeld"], item["id"]))
             else:
                 self.guns.addGun(Gun("M4-A1", 700, 27,Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]),30, item["beingHeld"], item["id"]))
+    
+    def Network_spawnBoxes(self, data):
+        print('spawning boxes')
+        for _,item in enumerate(data["position"]):
+            if item["Point"]["z"] % 2:
+                self.boxes.append(Box((1,1,1),Point(item["Point"]["x"],0.5,item["Point"]["z"])))
+            else:
+                self.boxes.append(Box((1,0.5,1),Point(item["Point"]["x"],0.25,item["Point"]["z"])))
+
 
     def Network_removeGun(self, data):
         for x, item in enumerate(self.guns.guns):
@@ -334,6 +345,10 @@ class GraphicsProgram3D(ConnectionListener):
         self.shader.set_model_matrix(self.model_matrix.matrix)
         self.cube.draw()
         self.model_matrix.pop_matrix()
+
+#       Boxes
+        for box in self.boxes:
+            box.draw(self)
 
 
     def program_loop(self):

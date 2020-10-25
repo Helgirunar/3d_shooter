@@ -11,10 +11,14 @@ damage = []
 length = 30
 width = 30
 gunsPos = []
-#       Create guns for red side
-for x in range(0,10):
-    gunsPos.append({"Point": Point(-length + 3,0.2,-width + 2 * x).toDict(), "beingHeld": False, "id": 1+2*x})
-    gunsPos.append({"Point": Point(-3,0.2,-width + 4 * x).toDict(), "beingHeld": False, "id": 2+ 2*x})
+boxesPos= []
+#       Create guns and boxes for red and blue side
+for x in range(1,10):
+    gunsPos.append({"Point": Point(-length + 3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 1+2*x})
+    gunsPos.append({"Point": Point(-3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 2+ 2*x})
+
+    boxesPos.append({"Point": Point(-length + 4,0.5,-width + 3 * x).toDict(), "id": 1+2*x})
+    boxesPos.append({"Point": Point(-4,0.5,-width + 3 * x).toDict(), "id": 2+ 2*x})
     
 class ClientChannel(Channel):
 
@@ -50,7 +54,7 @@ class ClientChannel(Channel):
     def Network_tookDamage(self, data):# Inserts damage to the damage list.
         damage.append(data)
     def Network_updateGun(self, data):
-        for x,item in enumerate(gunsPos):
+        for _,item in enumerate(gunsPos):
             if(item["id"] == data["id"]):
                 gunsPos.remove(item)
                 new = {
@@ -83,6 +87,7 @@ class MyServer(Server):
         }
         self.connections.append(newConnection)
         channel.Send({"action": "spawnGuns", "position": gunsPos})
+        channel.Send({"action": "spawnBoxes", "position": boxesPos})
         print(newConnection)
 
     def updatePlayers(self):# Sends all clients information about all players positions, and damage taken. 
