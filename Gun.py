@@ -273,21 +273,9 @@ class Gun():
         self.back = back
         self.up = up
 
-    def draw(self, shader):
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 4, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 8, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 12, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 16, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 20, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 24, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 28, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 32, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 36, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 40, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 44, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 48, 4)
-        glDrawArrays(GL_TRIANGLE_FAN, 52, 4)
+    def draw(self):
+        for i in range(14):
+            glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
 
     def toDict(self):
         return self.__dict__

@@ -282,7 +282,7 @@ class GraphicsProgram3D(ConnectionListener):
             self.model_matrix.add_rotation_x(-x.rotationX)
             self.shader.set_model_matrix(self.model_matrix.matrix)
             x.set_vertices(self.shader)
-            x.draw(self.shader)
+            x.draw()
             self.model_matrix.pop_matrix()
 
         for x in self.player.guns:
