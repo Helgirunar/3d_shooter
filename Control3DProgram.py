@@ -16,6 +16,7 @@ from Matrices import *
 from Player import Player
 from Guns import Guns
 from Gun import Gun
+from Texture import Texture
 
 from load_models import load_obj_file
 
@@ -107,28 +108,14 @@ class GraphicsProgram3D(ConnectionListener):
         pygame.mouse.set_visible(not self.infocus)
 
 #       Load in the textures we want. Maybe we might want to have it a list incase it gets too big.
-        self.texture_id01 = self.load_texture("dirt")
-        self.texture_id02 = self.load_texture("box")
-        self.texture_id03 = self.load_texture("gunColor")
+        self.texture_id01 = Texture("dirt")
+        self.texture_id03 = Texture("gunColor")
 
 #       Connect to the server
         self.Connect(('127.0.0.1', 1337))        
 
 #       Adding the player to the server's player list.
         self.Send({"action": "addPlayer", "player": self.player.toDict()})
-
-#   loads texture
-    def load_texture(self, name):
-        surface = pygame.image.load(sys.path[0] + "/textures/" + name + ".png")
-        txt_string = pygame.image.tostring(surface, "RGBA", 1)
-        width = surface.get_width()
-        height = surface.get_height()
-        tex_id = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, tex_id)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, txt_string)
-        return tex_id
 
     def Network_spawnGuns(self, data):
         print('spawning guns')
@@ -272,8 +259,7 @@ class GraphicsProgram3D(ConnectionListener):
 
         
 #       Guns
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id03)
+        self.texture_id03.use_texture()
         for x in self.guns.guns:
             self.model_matrix.push_matrix()
             self.model_matrix.add_translation(x.position.x,x.position.y, x.position.z)
@@ -337,8 +323,7 @@ class GraphicsProgram3D(ConnectionListener):
 
 #       sand supposed to a little bit shine, so decent specular.
         self.cube.set_vertices(self.shader)
-        glBindTexture(GL_TEXTURE_2D, self.texture_id01)
-        glActiveTexture(GL_TEXTURE1)
+        self.texture_id01.use_texture()
         self.shader.set_diffuse_texture()
         
         self.shader.set_mat_diffuse(1.0, 1.0, 1.0)
