@@ -321,7 +321,7 @@ class GraphicsProgram3D(ConnectionListener):
         for x in self.blueTeam:
             # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], 0.2, x["player"]["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"]/2-0.2, x["player"]["position"]["z"])
             # self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
             self.bluePlayer.draw(self.shader) 
@@ -331,7 +331,7 @@ class GraphicsProgram3D(ConnectionListener):
         for x in self.redTeam:
             # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], 0.2, x["player"]["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"]/2-0.2, x["player"]["position"]["z"])
             #self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
             self.redPlayer.draw(self.shader) 
