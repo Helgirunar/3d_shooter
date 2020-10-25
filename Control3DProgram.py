@@ -112,6 +112,7 @@ class GraphicsProgram3D(ConnectionListener):
 #       Load in the textures we want. Maybe we might want to have it a list incase it gets too big.
         self.texture_id01 = Texture("dirt")
         self.texture_id03 = Texture("gunColor")
+        self.texture_id02 = Texture("wood")
 
 #       Connect to the server
         self.Connect(('127.0.0.1', 1337))        
@@ -349,6 +350,35 @@ class GraphicsProgram3D(ConnectionListener):
 #       Boxes
         for box in self.boxes:
             box.draw(self)
+        
+#       Fence
+        self.texture_id02.use_texture()
+        self.cube.set_vertices(self.shader)
+        for i in range(2*self.width):
+            self.model_matrix.push_matrix()
+            self.model_matrix.add_translation(0.25,(1+((i%3)+1)/3)/2,-(0.25+i*0.5))
+            self.model_matrix.add_scale(0.5, 1+((i%3)+1)/3, 0.5)
+            self.shader.set_model_matrix(self.model_matrix.matrix)
+            self.cube.draw()
+            self.model_matrix.pop_matrix()
+            self.model_matrix.push_matrix()
+            self.model_matrix.add_translation(-0.25-self.length,(1+((i%3)+1)/3)/2,-(0.25+i*0.5))
+            self.model_matrix.add_scale(0.5, 1+((i%3)+1)/3, 0.5)
+            self.shader.set_model_matrix(self.model_matrix.matrix)
+            self.cube.draw()
+            self.model_matrix.pop_matrix()
+            self.model_matrix.push_matrix()
+            self.model_matrix.add_translation(-(0.25+i*0.5),(1+((i%3)+1)/3)/2,0.25)
+            self.model_matrix.add_scale(0.5, 1+((i%3)+1)/3, 0.5)
+            self.shader.set_model_matrix(self.model_matrix.matrix)
+            self.cube.draw()
+            self.model_matrix.pop_matrix()
+            self.model_matrix.push_matrix()
+            self.model_matrix.add_translation(-(0.25+i*0.5),(1+((i%3)+1)/3)/2,-0.25-self.width)
+            self.model_matrix.add_scale(0.5, 1+((i%3)+1)/3, 0.5)
+            self.shader.set_model_matrix(self.model_matrix.matrix)
+            self.cube.draw()
+            self.model_matrix.pop_matrix()
 
 
     def program_loop(self):
