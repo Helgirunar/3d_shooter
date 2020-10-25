@@ -195,7 +195,7 @@ class GraphicsProgram3D(ConnectionListener):
 #       For testing purpose, so we can run 2 clients on the same computer.
         if self.infocus:
             pygame.mouse.set_pos(self.displayCenter)
-        self.angle += delta_time
+        self.angle += delta_time/3
 #       For picking up guns.
         for x in self.guns.guns:
             if(x.beingHeld != True):
@@ -305,7 +305,7 @@ class GraphicsProgram3D(ConnectionListener):
         for x in self.blueTeam:
             # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], 0, x["player"]["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], 0.2, x["player"]["position"]["z"])
             # self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
             self.bluePlayer.draw(self.shader) 
@@ -315,13 +315,13 @@ class GraphicsProgram3D(ConnectionListener):
         for x in self.redTeam:
             # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], 0, x["player"]["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], 0.2, x["player"]["position"]["z"])
             #self.model_matrix.add_scale(0.25, 0.5, 0.25)
             self.shader.set_model_matrix(self.model_matrix.matrix)
             self.redPlayer.draw(self.shader) 
             self.model_matrix.pop_matrix()
 
-#       sun?
+#       sun
         self.model_matrix.push_matrix()
         self.sphere.set_vertices(self.shader)
         self.shader.set_mat_diffuse(1.0, 1.0, 0.0)
