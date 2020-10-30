@@ -15,8 +15,8 @@ boxesPos= []
 bulletsPos = []
 #       Create guns and boxes for red and blue side
 for x in range(1,10):
-    gunsPos.append({"Point": Point(-length + 3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 1+2*x, "forward" : Vector(0,0,1).toDict()})
-    gunsPos.append({"Point": Point(-3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 2+ 2*x, "forward" : Vector(0,0,1).toDict()})
+    gunsPos.append({"Point": Point(-length + 3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 1+2*x, "angle" : 0})
+    gunsPos.append({"Point": Point(-3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 2+ 2*x, "angle" : 0})
 
     boxesPos.append({"Point": Point(-length + 4,0.5,-width + 3 * x).toDict(), "id": 1+2*x})
     boxesPos.append({"Point": Point(-4,0.5,-width + 3 * x).toDict(), "id": 2+ 2*x})
@@ -53,7 +53,6 @@ class ClientChannel(Channel):
     def Network_tookDamage(self, data):# Inserts damage to the damage list.
         damage.append(data)
     def Network_updateGun(self, data):
-        print(data)
         for _,item in enumerate(gunsPos):
             if(item["id"] == data["id"]):
                 gunsPos.remove(item)
@@ -61,7 +60,7 @@ class ClientChannel(Channel):
                     "Point": data["newPos"],
                     "beingHeld": data["beingHeld"],
                     "id": data["id"],
-                    "forward": data["forward"]
+                    "angle": data["angle"]
                 }
                 gunsPos.append(new)
     def Network_dropGun(self, data):
@@ -76,7 +75,6 @@ class ClientChannel(Channel):
                 gunsPos.append(new)
 
     def Network_addBullet(self, data):
-        print(data["bullet"])
         bulletsPos.append(data["bullet"])
 
 

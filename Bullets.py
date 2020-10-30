@@ -13,7 +13,6 @@ class Bullets():
     def appendBullet(self, bullet):
         self.bullets.append(Bullet(bullet["dmg"],bullet["forward"],bullet["position"]))
 
-
     def updateBullets(self, delta_time, enemyTeam, server):
         tmpBullets = []
         for y in self.bullets:

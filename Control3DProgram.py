@@ -11,7 +11,7 @@ from time import sleep
 import sys
 import time
 import random as rand
-from Shaders import *
+from Shaders import Shader3D
 from Matrices import *
 from Player import Player
 from Guns import Guns
@@ -69,7 +69,7 @@ class GraphicsProgram3D(ConnectionListener):
         else:
             self.PlayerStartPos = self.teamBlueSpawns[rand.randint(0,4)]            
 #           This is my player, it takes parameters (poisition, name, team, teamSpawns)
-            self.player = Player(self.PlayerStartPos, self.playerName, self.pickedTeam, self.teamRedSpawns)
+            self.player = Player(self.PlayerStartPos, self.playerName, self.pickedTeam, self.teamBlueSpawns)
 
 
 #       extra            
@@ -187,7 +187,7 @@ class GraphicsProgram3D(ConnectionListener):
             for y in self.guns.guns:
                 #Only update if the position has changed or if he has pickedup or dropped a gun
                 if item["id"] == y.id and item["Point"]["x"] != y.position.x and item["Point"]["z"] != y.position.z or item["id"] == y.id and item["beingHeld"] != y.beingHeld:
-                    y.update(Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]), item["beingHeld"], item["forward"])
+                    y.update(Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]), item["beingHeld"], item["angle"])
 
         for x in data["bulletsPos"]:
             self.bullets.appendBullet(x)
@@ -212,8 +212,8 @@ class GraphicsProgram3D(ConnectionListener):
         self.angleYRotate += -math.atan(self.mouseMove[0]) * delta_time * 1.5
         self.angleX = -math.atan(self.mouseMove[1]) * delta_time * 1.5
         self.angleXRotate += -math.atan(self.mouseMove[1]) * delta_time * 1.5
-        self.player.yaw(self.angleY * 1.3, self)# Horizontal
-        self.player.pitch(self.angleX * 1.3,self)# Vertical
+        self.player.yaw(self.angleY * 1.3, self,self.angleYRotate *1.3)# Horizontal
+        self.player.pitch(self.angleX * 1.3,self, self.angleXRotate*1.3)# Vertical
 
 #       Crouch and sprint.
         speed = self.globalSpeed
@@ -227,13 +227,17 @@ class GraphicsProgram3D(ConnectionListener):
 
 #       Movement
         if self.W_key_down:
-            self.player.slide(0, 0, -speed * delta_time, self)
+            if self.can_move(0, -speed * delta_time):
+                self.player.slide(0, 0, -speed * delta_time, self)
         if self.S_key_down:
-            self.player.slide(0, 0, 4 * delta_time * 1.3, self)
+            if self.can_move(0,4 * delta_time * 1.3):
+                self.player.slide(0, 0, 4 * delta_time * 1.3, self)
         if self.A_key_down:
-            self.player.slide(-4 * delta_time/2 * 1.3, 0,0, self)
+            if self.can_move(-4 * delta_time/2 * 1.3,0):
+                self.player.slide(-4 * delta_time/2 * 1.3, 0,0, self)
         if self.D_key_down:
-            self.player.slide(5 * delta_time/2 * 1.3, 0, 0, self)
+            if self.can_move(5 * delta_time/2 * 1.3,0):
+                self.player.slide(5 * delta_time/2 * 1.3, 0, 0, self)
 #       updates the player and then does collision for each bullet inside the each gun.
         self.player.updatePlayer(delta_time, self)
 #       Reason for why I take the teams as parameters, I am only supposed to be able to hit enemy members.
@@ -241,6 +245,17 @@ class GraphicsProgram3D(ConnectionListener):
             self.bullets.updateBullets(delta_time, self.blueTeam, self)
         else:
             self.bullets.updateBullets(delta_time, self.redTeam, self)
+
+    def can_move(self, stepx, stepz):
+        new_pos = self.player.position + self.player.right * stepx + self.player.back * stepz
+        if -0.25>new_pos.x >-self.width+0.25:
+            if -0.25>new_pos.z >-self.length+0.25:
+                for box in self.boxes:
+                    if box.pos.x-0.75<new_pos.x<box.pos.x+0.75:
+                        if box.pos.z-0.75<new_pos.z<box.pos.z+0.75:
+                            return False
+                return True
+        return False
 
     def display(self):
         glEnable(GL_DEPTH_TEST)  
@@ -287,11 +302,6 @@ class GraphicsProgram3D(ConnectionListener):
             x.set_vertices(self.shader)
             x.draw()
             self.model_matrix.pop_matrix()
-
-        for x in self.player.guns:
-            if(x.beingHeld):
-                x.rotationY = self.angleYRotate * 1.3
-                x.rotationX = self.angleXRotate * 1.3
      
 #       bullets
         self.sphere.set_vertices(self.shader)
@@ -310,8 +320,9 @@ class GraphicsProgram3D(ConnectionListener):
         for x in self.blueTeam:
             # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], 0.2, x["player"]["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"]/2-0.2, x["player"]["position"]["z"])
             # self.model_matrix.add_scale(0.25, 0.5, 0.25)
+            self.model_matrix.add_rotation_y(90 + x["player"]["angle"])
             self.shader.set_model_matrix(self.model_matrix.matrix)
             self.bluePlayer.draw(self.shader) 
             self.model_matrix.pop_matrix()
@@ -320,8 +331,9 @@ class GraphicsProgram3D(ConnectionListener):
         for x in self.redTeam:
             # print(Point(x["player"]["position"]["x"], x["player"]["position"]["y"], x["player"]["position"]["z"]))
             self.model_matrix.push_matrix()
-            self.model_matrix.add_translation(x["player"]["position"]["x"], 0.2, x["player"]["position"]["z"])
+            self.model_matrix.add_translation(x["player"]["position"]["x"], x["player"]["position"]["y"]/2-0.2, x["player"]["position"]["z"])
             #self.model_matrix.add_scale(0.25, 0.5, 0.25)
+            self.model_matrix.add_rotation_y(90 + x["player"]["angle"])
             self.shader.set_model_matrix(self.model_matrix.matrix)
             self.redPlayer.draw(self.shader) 
             self.model_matrix.pop_matrix()

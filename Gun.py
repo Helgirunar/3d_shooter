@@ -221,11 +221,11 @@ class Gun():
             #self.bullets.append(Bullet(self.dmg,self.forward, self.position))
             self.magazine = self.magazine-1
 
-    def update(self, pos, beingHeld, forward):
+    def update(self, pos, beingHeld, angle):
         self.position.x = pos.x
         self.position.z = pos.z
         self.beingHeld = beingHeld
-        self.forward = Vector(forward["x"],forward["y"],forward["z"])
+        self.rotationY = angle
     def aiming(self, looking, position):
         self.position = position
     def reload(self, player, delta_time):
