@@ -12,10 +12,11 @@ length = 30
 width = 30
 gunsPos = []
 boxesPos= []
+bulletsPos = []
 #       Create guns and boxes for red and blue side
 for x in range(1,10):
-    gunsPos.append({"Point": Point(-length + 3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 1+2*x})
-    gunsPos.append({"Point": Point(-3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 2+ 2*x})
+    gunsPos.append({"Point": Point(-length + 3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 1+2*x, "forward" : Vector(0,0,1).toDict()})
+    gunsPos.append({"Point": Point(-3,0.2,-width + 3 * x).toDict(), "beingHeld": False, "id": 2+ 2*x, "forward" : Vector(0,0,1).toDict()})
 
     boxesPos.append({"Point": Point(-length + 4,0.5,-width + 3 * x).toDict(), "id": 1+2*x})
     boxesPos.append({"Point": Point(-4,0.5,-width + 3 * x).toDict(), "id": 2+ 2*x})
@@ -25,14 +26,12 @@ class ClientChannel(Channel):
     def Network(self, data):
         pass
     def Network_addPlayer(self, data):# Adds player
-        global newPlayer
         print(data["player"]["name"] + " has joined the server")
         tmpPlayer = {
             "id": len(players),
             "player": data["player"]
         }
         players.append(tmpPlayer)
-        newPlayer = True
     def Network_updatePlayer(self, data):# Updates player position
         for x, item in enumerate(players):
             if(data["player"]["name"] == item["player"]["name"]):
@@ -44,23 +43,25 @@ class ClientChannel(Channel):
         global whoLeft, playerLeft
         for x, item in enumerate(players):
             if(data["player"]["name"] == item["player"]["name"]):
-                print(data["player"]["name"] + " has left the server")
+                print(data["player"]["name"], " has left the server")
                 players.remove({
                     "id": item["id"],
-                    "player": data["player"]})
+                    "player": item["player"]})
         playerLeft = True
         whoLeft = data["player"]
 
     def Network_tookDamage(self, data):# Inserts damage to the damage list.
         damage.append(data)
     def Network_updateGun(self, data):
+        print(data)
         for _,item in enumerate(gunsPos):
             if(item["id"] == data["id"]):
                 gunsPos.remove(item)
                 new = {
                     "Point": data["newPos"],
                     "beingHeld": data["beingHeld"],
-                    "id": data["id"]
+                    "id": data["id"],
+                    "forward": data["forward"]
                 }
                 gunsPos.append(new)
     def Network_dropGun(self, data):
@@ -73,6 +74,11 @@ class ClientChannel(Channel):
                     "id": data["id"]
                 }
                 gunsPos.append(new)
+
+    def Network_addBullet(self, data):
+        print(data["bullet"])
+        bulletsPos.append(data["bullet"])
+
 
 class MyServer(Server):
     channelClass = ClientChannel
@@ -93,17 +99,20 @@ class MyServer(Server):
     def updatePlayers(self):# Sends all clients information about all players positions, and damage taken. 
         global damage
         global newPlayer
+        global bulletsPos
         packet = {
             "action": "updatePlayer",
             "players": players,
             "damage": damage,
-            "gunsPos": gunsPos
+            "gunsPos": gunsPos,
+            "bulletsPos": bulletsPos
         }
         for x in self.connections:
             x["channel"].Send(packet)
             
-        #After we send the damage, we want to clear the list so we don't deal the same damage twice.
+        #After we send the damage and bullets, we want to clear the list so we don't deal the same damage twice.
         damage = []
+        bulletsPos = []
 
     def notifyLeave(self):
         global playerLeft

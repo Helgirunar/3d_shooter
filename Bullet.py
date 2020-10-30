@@ -6,9 +6,9 @@ class Bullet():
     def __init__(self,damage, direction, pos):
 #       print('New bullet on : (' + str(direction.x) + ',' + str(direction.z) + ")")
         self.damage = damage
-        self.forward = direction
-        self.startPos = Point(pos.x,pos.y,pos.z)
-        self.position = pos
+        self.forward = Vector(direction["x"],direction["y"],direction["z"])
+        self.startPos = Point(pos["x"],pos["y"],pos["z"])
+        self.position = Point(pos["x"],pos["y"],pos["z"])
         self.sphere = Sphere()
 
     def collide(self, player):

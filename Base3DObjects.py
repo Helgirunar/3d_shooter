@@ -72,6 +72,8 @@ class Point:
 
     def __sub__(self, other):
         return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
+    def __mul__(self, scalar):
+        return Vector(self.x * scalar, self.y * scalar, self.z * scalar)
     def __str__(self):
         return str(self.__dict__)
 
@@ -98,6 +100,10 @@ class Vector:
 
     def __str__(self):
         return str(self.__dict__)
+        
+    def toDict(self):
+        return self.__dict__
+
     
     def normalize(self):
         length = self.__len__()

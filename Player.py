@@ -34,7 +34,7 @@ class Player():
         self.gunPos = self.position + Vector(0,-0.10,0) + self.forward * 0.2 + self.right * 0.1
         self.selected.position = self.gunPos
         if(self.selected.beingHeld):
-            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id})
+            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id, "forward": self.forward.toDict()})
         if(self.haveGun):
             self.selected.position = self.gunPos
 
@@ -59,11 +59,11 @@ class Player():
             if(len(self.guns) == 0):
                 self.selected = gun
                 gun.setOrientation(self.gunPos, self.forward, self.right, self.back, self.up)
-                server.Send({"action": "updateGun","newPos": gun.position.toDict(), "beingHeld": True, "id": self.selected.id})
+                server.Send({"action": "updateGun","newPos": gun.position.toDict(), "beingHeld": True, "id": self.selected.id, "forward": self.forward.toDict()})
             else:
                 gun.position = Point(0,0,0)
                 self.holstered = gun
-                server.Send({"action": "updateGun","newPos": gun.position.toDict(), "beingHeld": True, "id": self.holstered.id})
+                server.Send({"action": "updateGun","newPos": gun.position.toDict(), "beingHeld": True, "id": self.holstered.id, "forward": self.forward.toDict()})
             self.guns.append(gun)
     def drop(self, server):
         if(self.selected.name != "template"):
@@ -71,34 +71,34 @@ class Player():
             tmpGun.setOrientation(Point(self.gunPos.x, 0.2, self.gunPos.z), self.forward, self.right, self.back, self.up)
             self.selected = self.emptyGun
             self.guns.remove(tmpGun)
-            server.Send({"action": "updateGun","newPos": Point(self.gunPos.x, 0.2, self.gunPos.z).toDict(), "beingHeld": False, "id": tmpGun.id})
+            server.Send({"action": "updateGun","newPos": Point(self.gunPos.x, 0.2, self.gunPos.z).toDict(), "beingHeld": False, "id": tmpGun.id, "forward": self.forward.toDict()})
             if(self.holstered.name != "template"):
                 self.selected = self.holstered
-                server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id})
+                server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id, "forward": self.forward.toDict()})
                 self.holstered = self.emptyGun
 
     def changeGun(self, nr, server):# If the player is trying to swap between his primary and secondary gun.
         if(nr == 1 and len(self.guns) > 0):
             self.selected = self.guns[0]
             self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
-            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id})
+            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id, "forward": self.forward.toDict()})
             if(len(self.guns) == 2):
                 self.holstered = self.guns[1]
                 self.holstered.position = Point(0,0,0)
-                server.Send({"action": "updateGun","newPos": self.holstered.position.toDict(), "beingHeld": True, "id": self.holstered.id})
+                server.Send({"action": "updateGun","newPos": self.holstered.position.toDict(), "beingHeld": True, "id": self.holstered.id, "forward": self.forward.toDict()})
         elif(len(self.guns) == 2):
             self.selected = self.guns[1]
             self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
-            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id})
+            server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": True, "id": self.selected.id, "forward": self.forward.toDict()})
             self.holstered = self.guns[0]
             self.holstered.position = Point(0,0,0)
-            server.Send({"action": "updateGun","newPos": self.holstered.position.toDict(), "beingHeld": True, "id": self.holstered.id})
+            server.Send({"action": "updateGun","newPos": self.holstered.position.toDict(), "beingHeld": True, "id": self.holstered.id, "forward": self.forward.toDict()})
     
-    def updatePlayer(self, delta_time):# Update function for the player
+    def updatePlayer(self, delta_time,server):# Update function for the player
         self.lastFired -= delta_time * 5
         if(self.shooting and self.lastFired <= 0 and self.reloading == False):
             self.lastFired = self.selected.delay
-            self.selected.shoot()
+            self.selected.shoot(server)
         elif(self.reloading):
             player = self
             self.selected.reload(player, delta_time)
@@ -106,7 +106,9 @@ class Player():
     def death(self, server):
         for x in self.guns:
             dropTo = Point(self.gunPos.x, 0.2, self.gunPos.z).toDict()
-            server.Send({"action": "updateGun","newPos": dropTo, "beingHeld": False, "id": x.id})
+            server.Send({"action": "updateGun","newPos": dropTo, "beingHeld": False, "id": x.id, "forward": self.forward.toDict()})
+        self.selected = self.emptyGun
+        self.holstered = self.emptyGun
         self.guns = []
         self.position = self.spawns[rand.randint(0,4)]
         self.health = 100
@@ -131,7 +133,7 @@ class Player():
         self.looking = Vector(self.forward.x, self.looking.y, self.forward.z)
         self.gunPos = self.position + Vector(0,-0.10,0) + self.forward * 0.2 + self.right * 0.1
         self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
-        server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id})
+        server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id, "forward": self.forward.toDict()})
 
     def pitch(self, angle, server):# Moves the player Vertically
         c = cos(angle)
@@ -139,13 +141,12 @@ class Player():
         self.looking = self.up * s + self.looking * c
         self.gunPos = self.position + Vector(0,-0.10,0) + self.forward * 0.2 + self.right * 0.1
         self.selected.setOrientation(self.gunPos, self.looking, self.right, self.back, self.up)
-        server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id})
+        server.Send({"action": "updateGun","newPos": self.selected.position.toDict(), "beingHeld": self.selected.beingHeld, "id": self.selected.id, "forward": self.forward.toDict()})
 
-    def toDict(self):# Creates a dict from the usefull information that the server might need.
-        tempSelf = {
+    def toDict(self):# Creates a dict with useful information that the server needs.
+        return {
             "name": self.name,
             "position": self.position.toDict(),
             "health": self.health,
             "team": self.team
         }
-        return tempSelf

@@ -18,6 +18,7 @@ from Guns import Guns
 from Gun import Gun
 from Texture import Texture
 from Box import Box
+from Bullets import Bullets
 
 from load_models import load_obj_file
 
@@ -88,6 +89,7 @@ class GraphicsProgram3D(ConnectionListener):
         self.clock.tick(60)
         self.guns = Guns()
         self.boxes= list()
+        self.bullets = Bullets()
 #       For movement        
         self.angle = 0
         self.angleY = 0
@@ -185,7 +187,10 @@ class GraphicsProgram3D(ConnectionListener):
             for y in self.guns.guns:
                 #Only update if the position has changed or if he has pickedup or dropped a gun
                 if item["id"] == y.id and item["Point"]["x"] != y.position.x and item["Point"]["z"] != y.position.z or item["id"] == y.id and item["beingHeld"] != y.beingHeld:
-                    y.update(Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]), item["beingHeld"])
+                    y.update(Point(item["Point"]["x"],item["Point"]["y"],item["Point"]["z"]), item["beingHeld"], item["forward"])
+
+        for x in data["bulletsPos"]:
+            self.bullets.appendBullet(x)
     def update(self):
         connection.Pump()
         self.Pump()
@@ -230,12 +235,12 @@ class GraphicsProgram3D(ConnectionListener):
         if self.D_key_down:
             self.player.slide(5 * delta_time/2 * 1.3, 0, 0, self)
 #       updates the player and then does collision for each bullet inside the each gun.
-        self.player.updatePlayer(delta_time)
+        self.player.updatePlayer(delta_time, self)
 #       Reason for why I take the teams as parameters, I am only supposed to be able to hit enemy members.
         if(self.pickedTeam == "red"):
-            self.guns.updateGuns(delta_time, self.blueTeam, self)
+            self.bullets.updateBullets(delta_time, self.blueTeam, self)
         else:
-            self.guns.updateGuns(delta_time, self.redTeam, self)
+            self.bullets.updateBullets(delta_time, self.redTeam, self)
 
     def display(self):
         glEnable(GL_DEPTH_TEST)  
@@ -290,14 +295,13 @@ class GraphicsProgram3D(ConnectionListener):
      
 #       bullets
         self.sphere.set_vertices(self.shader)
-        for x in self.guns.guns:
-            for y in x.bullets:
-                self.model_matrix.push_matrix()
-                self.model_matrix.add_translation(y.position.x,y.position.y, y.position.z)
-                self.model_matrix.add_scale(0.05, 0.05, 0.05)
-                self.shader.set_model_matrix(self.model_matrix.matrix)
-                y.sphere.draw()
-                self.model_matrix.pop_matrix()
+        for y in self.bullets.bullets:
+            self.model_matrix.push_matrix()
+            self.model_matrix.add_translation(y.position.x,y.position.y, y.position.z)
+            self.model_matrix.add_scale(0.05, 0.05, 0.05)
+            self.shader.set_model_matrix(self.model_matrix.matrix)
+            y.sphere.draw()
+            self.model_matrix.pop_matrix()
 
 #       other players?
         self.shader.set_mat_diffuse(1.0, 0.1, 0.0)

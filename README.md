@@ -19,7 +19,6 @@ To Do:
     1. Add value to the servers data to handle the orientation
     2. Pass that data from and to the server if it changed
 2. Model for the player?
-3. Have bullets be serverside
 4. Tweak the respawn
     1. Currently, the spawns are weird, I noticed that red respawned on blue's spot.
 5. Add walls and boxes

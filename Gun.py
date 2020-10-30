@@ -18,7 +18,6 @@ class Gun():
         self.up = Vector(0,1,0)
         self.rotationY = 0
         self.rotationX = 0
-        self.bullets = []
         self.reloadTimeTotal = 3
         self.reloadTimeLeft = 3
         self.delay = rpm / 1000.0
@@ -216,15 +215,17 @@ class Gun():
                             1.0, 1.0,
                             1.0, 0.0]
 
-    def shoot(self):
+    def shoot(self, server):
         if(self.magazine != 0):
-            self.bullets.append(Bullet(self.dmg,self.forward, self.position))
+            server.Send({"action":"addBullet", "bullet": {"dmg":self.dmg,"forward":self.forward.toDict(),"position":self.position.toDict()}})
+            #self.bullets.append(Bullet(self.dmg,self.forward, self.position))
             self.magazine = self.magazine-1
 
-    def update(self, pos, beingHeld):
+    def update(self, pos, beingHeld, forward):
         self.position.x = pos.x
         self.position.z = pos.z
         self.beingHeld = beingHeld
+        self.forward = Vector(forward["x"],forward["y"],forward["z"])
     def aiming(self, looking, position):
         self.position = position
     def reload(self, player, delta_time):
