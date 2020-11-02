@@ -22,7 +22,9 @@ class Bullets():
                     server.Send({"action": "tookDamage", "player": i, "dmg": y.damage})
             if(y.position.z >= 0 or y.position.y >= 10 or y.position.x >= 0 or y.position.z <= -30 or y.position.y <= -1 or y.position.x <= -30):
                 pass
+            elif y.collide_box(server.boxes):
+                pass
             else:
                 tmpBullets.append(y)
-            self.bullets = tmpBullets
+        self.bullets = tmpBullets
 

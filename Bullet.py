@@ -18,6 +18,13 @@ class Bullet():
         if(distance <= 0.2):
             return True
         return False
+    def collide_box(self, boxes):
+        for box in boxes:
+            if box.pos.x-0.5-0.1<self.position.x<box.pos.x+0.5+0.1:
+                if box.pos.z-0.5-0.1<self.position.z<box.pos.z+0.5+0.1:
+                    if box.pos.y-box.size[2]/2-0.1<self.position.y<box.pos.y+box.size[2]/2+0.1:
+                        return True
+        return False
     def collideDict(self, player):
         x = self.position.x - player["player"]["position"]["x"]
         z = self.position.z - player["player"]["position"]["z"]
