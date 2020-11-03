@@ -1,5 +1,8 @@
 # 3d_shooter
 Assignment05 for TGRA
+authors:    
+    Eva Ósk Gunnarsdóttir   (evag18@ru.is)
+    Helgi Rúnar Jóhannesson (helgij17@ru.is)
 Report: https://www.overleaf.com/read/rvhwjzsczsph
 
 REQ:
