@@ -2,6 +2,8 @@ from Base3DObjects import *
 from math import * # trigonometry
 from Matrices import *
 from Bullet import Bullet
+import sys
+import pygame
 
 class Gun():
     def __init__(self,name, rpm, dmg, pos, capacity, beingHeld, id):
@@ -22,6 +24,7 @@ class Gun():
         self.reloadTimeLeft = 3
         self.delay = rpm / 1000.0
         self.beingHeld = beingHeld
+        self.effect = pygame.mixer.Sound(sys.path[0] + '/sound/gunshot.wav')
         self.position_array = [-0.2, -0.2, -0.5,
                             -0.2, 0.2, -0.5,
                             0.2, 0.2, -0.5,
@@ -217,6 +220,7 @@ class Gun():
 
     def shoot(self, server):
         if(self.magazine != 0):
+            self.effect.play()
             server.Send({"action":"addBullet", "bullet": {"dmg":self.dmg,"forward":self.forward.toDict(),"position":self.position.toDict()}})
             #self.bullets.append(Bullet(self.dmg,self.forward, self.position))
             self.magazine = self.magazine-1
