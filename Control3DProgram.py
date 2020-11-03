@@ -232,35 +232,62 @@ class GraphicsProgram3D(ConnectionListener):
             else:
                 v= self.choos_slide_vector() 
                 if self.can_move(self.player.right.angle(v)*-speed*delta_time/2,self.player.forward.angle(v)*-speed*delta_time/2):
-                    print(v)
                     self.player.slide_(delta_time, self, v, -speed/2)
                 elif self.can_move(self.player.right.angle(v)*speed*delta_time/2,self.player.forward.angle(v)*speed*delta_time/2):
-                    print(v)
                     self.player.slide_(delta_time, self, v, speed/2)
                 else:
                     v1=self.choos_slide_vector({v}) 
                     if self.can_move(self.player.right.angle(v1)*-speed*delta_time/2,self.player.forward.angle(v1)*-speed*delta_time/2):
-                        print(v1)
                         self.player.slide_(delta_time, self, v1, -speed/2)
                     elif self.can_move(self.player.right.angle(v1)*speed*delta_time/2,self.player.forward.angle(v1)*speed*delta_time/2):
-                        print(v1)
                         self.player.slide_(delta_time, self, v1, speed/2)
-                    # else:
-                    #     v2=self.choos_slide_vector({v,v1}) 
-                    #     print("Bingo!")
-                    #     if self.can_move(self.player.right.angle(v2)*-speed*delta_time/2,self.player.forward.angle(v2)*-speed*delta_time/2):
-                    #         self.player.slide_(delta_time, self, v2, -speed/2)
                             
 
         if self.S_key_down:
             if self.can_move(0,4 * delta_time * 1.3):
                 self.player.slide(0, 0, 4 * delta_time * 1.3, self)
+            else:
+                v= self.choos_slide_vector() 
+                if self.can_move(self.player.right.angle(v)*-speed*delta_time/2,self.player.forward.angle(v)*-speed*delta_time/2):
+                    self.player.slide_(delta_time, self, v, -speed/2)
+                elif self.can_move(self.player.right.angle(v)*speed*delta_time/2,self.player.forward.angle(v)*speed*delta_time/2):
+                    self.player.slide_(delta_time, self, v, speed/2)
+                else:
+                    v1=self.choos_slide_vector({v}) 
+                    if self.can_move(self.player.right.angle(v1)*-speed*delta_time/2,self.player.forward.angle(v1)*-speed*delta_time/2):
+                        self.player.slide_(delta_time, self, v1, -speed/2)
+                    elif self.can_move(self.player.right.angle(v1)*speed*delta_time/2,self.player.forward.angle(v1)*speed*delta_time/2):
+                        self.player.slide_(delta_time, self, v1, speed/2)
         if self.A_key_down:
             if self.can_move(-4 * delta_time/2 * 1.3,0):
                 self.player.slide(-4 * delta_time/2 * 1.3, 0,0, self)
+            else:
+                v= self.choos_slide_vector() 
+                if self.can_move(self.player.right.angle(v)*-speed*delta_time/2,self.player.forward.angle(v)*-speed*delta_time/2):
+                    self.player.slide_(delta_time, self, v, -speed/2)
+                elif self.can_move(self.player.right.angle(v)*speed*delta_time/2,self.player.forward.angle(v)*speed*delta_time/2):
+                    self.player.slide_(delta_time, self, v, speed/2)
+                else:
+                    v1=self.choos_slide_vector({v}) 
+                    if self.can_move(self.player.right.angle(v1)*-speed*delta_time/2,self.player.forward.angle(v1)*-speed*delta_time/2):
+                        self.player.slide_(delta_time, self, v1, -speed/2)
+                    elif self.can_move(self.player.right.angle(v1)*speed*delta_time/2,self.player.forward.angle(v1)*speed*delta_time/2):
+                        self.player.slide_(delta_time, self, v1, speed/2)
         if self.D_key_down:
             if self.can_move(5 * delta_time/2 * 1.3,0):
                 self.player.slide(5 * delta_time/2 * 1.3, 0, 0, self)
+            else:
+                v= self.choos_slide_vector() 
+                if self.can_move(self.player.right.angle(v)*-speed*delta_time/2,self.player.forward.angle(v)*-speed*delta_time/2):
+                    self.player.slide_(delta_time, self, v, -speed/2)
+                elif self.can_move(self.player.right.angle(v)*speed*delta_time/2,self.player.forward.angle(v)*speed*delta_time/2):
+                    self.player.slide_(delta_time, self, v, speed/2)
+                else:
+                    v1=self.choos_slide_vector({v}) 
+                    if self.can_move(self.player.right.angle(v1)*-speed*delta_time/2,self.player.forward.angle(v1)*-speed*delta_time/2):
+                        self.player.slide_(delta_time, self, v1, -speed/2)
+                    elif self.can_move(self.player.right.angle(v1)*speed*delta_time/2,self.player.forward.angle(v1)*speed*delta_time/2):
+                        self.player.slide_(delta_time, self, v1, speed/2)
 #       updates the player and then does collision for each bullet inside the each gun.
         self.player.updatePlayer(delta_time, self)
 #       Reason for why I take the teams as parameters, I am only supposed to be able to hit enemy members.
