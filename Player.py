@@ -21,7 +21,6 @@ class Player():
         self.selected = self.emptyGun
         self.holstered = self.emptyGun
         self.shooting = False
-        self.dead = False
         self.angle = 0
         self.deaths = 0
         self.health = 100
@@ -116,15 +115,13 @@ class Player():
         self.guns = []
         self.position = self.spawns[rand.randint(0,4)]
         self.health = 100
-        self.dead = False
 
     def takeDamage(self, dmg, server):# Deals damage, only if the player is still alive.
         if(self.health > 0):
             self.health -= dmg
-        if(self.health <= 0 and self.dead != True):
+        if(self.health <= 0):
             self.death(server)
             self.deaths += 1
-            self.dead = True
             self.position.y = 0
 
     def yaw(self, angle,server, angleRotate):# Moves the player Horizontally
