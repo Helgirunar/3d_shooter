@@ -20,11 +20,12 @@ class Gun():
         self.up = Vector(0,1,0)
         self.rotationY = 0
         self.rotationX = 0
-        self.reloadTimeTotal = 3
-        self.reloadTimeLeft = 3
+        self.reloadTimeTotal = 1
+        self.reloadTimeLeft = self.reloadTimeTotal
         self.delay = rpm / 1000.0
         self.beingHeld = beingHeld
         self.effect = pygame.mixer.Sound(sys.path[0] + '/sound/gunshot.wav')
+        self.effect1 = pygame.mixer.Sound(sys.path[0] + '/sound/reload.wav')
         self.position_array = [-0.2, -0.2, -0.5,
                             -0.2, 0.2, -0.5,
                             0.2, 0.2, -0.5,

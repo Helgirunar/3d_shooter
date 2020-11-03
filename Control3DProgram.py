@@ -489,6 +489,7 @@ class GraphicsProgram3D(ConnectionListener):
                     if event.key == K_1:
                         self.player.changeGun(1, self)
                     if event.key == K_r:
+                        if self.player.selected.id!= 0: self.player.selected.effect1.play()
                         self.player.reloading = True
                     if event.key == K_p:
                         self.infocus = not self.infocus
