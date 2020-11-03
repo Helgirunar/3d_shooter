@@ -16,7 +16,5 @@ if you want to test the multiplayer function:
 Now you should be able to see the other player move on your first/second screen depending on which one you're controlling.
 
 To Do:
-1. Tweak the respawn
-    1. Currently, the spawns are weird. After dying you become invulnerable.
-2. Improve collision (slide)
+1. Test, test, test, find bugs and report
 3. Extra
