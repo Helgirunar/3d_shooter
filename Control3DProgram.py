@@ -229,6 +229,11 @@ class GraphicsProgram3D(ConnectionListener):
         if self.W_key_down:
             if self.can_move(0, -speed * delta_time):
                 self.player.slide(0, 0, -speed * delta_time, self)
+            elif self.can_move(self.player.right.angle(Vector(1,0,0))*-speed*delta_time/pi,self.player.forward.angle(Vector(1,0,0))*-speed*delta_time/pi):
+                self.player.slide_(delta_time, self, Vector(1,0,0), -speed)
+            elif self.can_move(self.player.right.angle(Vector(0,0,1))*-speed*delta_time/pi,self.player.forward.angle(Vector(0,0,1))*-speed*delta_time/pi):
+                self.player.slide_(delta_time, self, Vector(0,0,1), -speed)
+                
         if self.S_key_down:
             if self.can_move(0,4 * delta_time * 1.3):
                 self.player.slide(0, 0, 4 * delta_time * 1.3, self)

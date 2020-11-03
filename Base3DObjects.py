@@ -110,7 +110,12 @@ class Vector:
         self.x /= length
         self.y /= length
         self.z /= length
-
+    
+    def angle(self, other):
+        '''returns the angle between two vectors in degrees'''
+        a= self.dot(other)
+        b= self.__len__()*other.__len__()
+        return acos(a/b)
 
     def dot(self, other):
         return self.x * other.x + self.y * other.y + self.z * other.z
