@@ -229,11 +229,29 @@ class GraphicsProgram3D(ConnectionListener):
         if self.W_key_down:
             if self.can_move(0, -speed * delta_time):
                 self.player.slide(0, 0, -speed * delta_time, self)
-            elif self.can_move(self.player.right.angle(Vector(1,0,0))*-speed*delta_time/pi,self.player.forward.angle(Vector(1,0,0))*-speed*delta_time/pi):
-                self.player.slide_(delta_time, self, Vector(1,0,0), -speed)
-            elif self.can_move(self.player.right.angle(Vector(0,0,1))*-speed*delta_time/pi,self.player.forward.angle(Vector(0,0,1))*-speed*delta_time/pi):
-                self.player.slide_(delta_time, self, Vector(0,0,1), -speed)
-                
+            else:
+                v= self.choos_slide_vector() 
+                if self.can_move(self.player.right.angle(v)*-speed*delta_time/2,self.player.forward.angle(v)*-speed*delta_time/2):
+                    print(v)
+                    self.player.slide_(delta_time, self, v, -speed/2)
+                elif self.can_move(self.player.right.angle(v)*speed*delta_time/2,self.player.forward.angle(v)*speed*delta_time/2):
+                    print(v)
+                    self.player.slide_(delta_time, self, v, speed/2)
+                else:
+                    v1=self.choos_slide_vector({v}) 
+                    if self.can_move(self.player.right.angle(v1)*-speed*delta_time/2,self.player.forward.angle(v1)*-speed*delta_time/2):
+                        print(v1)
+                        self.player.slide_(delta_time, self, v1, -speed/2)
+                    elif self.can_move(self.player.right.angle(v1)*speed*delta_time/2,self.player.forward.angle(v1)*speed*delta_time/2):
+                        print(v1)
+                        self.player.slide_(delta_time, self, v1, speed/2)
+                    # else:
+                    #     v2=self.choos_slide_vector({v,v1}) 
+                    #     print("Bingo!")
+                    #     if self.can_move(self.player.right.angle(v2)*-speed*delta_time/2,self.player.forward.angle(v2)*-speed*delta_time/2):
+                    #         self.player.slide_(delta_time, self, v2, -speed/2)
+                            
+
         if self.S_key_down:
             if self.can_move(0,4 * delta_time * 1.3):
                 self.player.slide(0, 0, 4 * delta_time * 1.3, self)
@@ -261,6 +279,14 @@ class GraphicsProgram3D(ConnectionListener):
                             return False
                 return True
         return False
+    def choos_slide_vector(self,N=set()):
+        V= {Vector(1,0,0), Vector(-1,0,0),Vector(0,0,1), Vector(0,0,-1)}
+        V, temp_min,temp_vector= V-N, 90, Vector(1,0,0)
+        for v in V:
+            ang= self.player.forward.angle(v)
+            if ang<=temp_min:
+                temp_min, temp_vector = ang,v
+        return temp_vector
 
     def display(self):
         glEnable(GL_DEPTH_TEST)  

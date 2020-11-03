@@ -39,7 +39,7 @@ class Player():
         if(self.haveGun):
             self.selected.position = self.gunPos
     def slide_(self, delta_time, server, v= Vector(1,0,0), speed=25):
-        self.slide(self.right.angle(v)*speed*delta_time/pi,0,self.forward.angle(v)*speed*delta_time/pi, server)
+        self.slide(self.right.angle(v)*speed*delta_time,0,self.forward.angle(v)*speed*delta_time, server)
 
     def fall(self, speed):# Gravity? If jump is implemented, so he gets pulled back down.
         if(self.position.y > 0.5):
